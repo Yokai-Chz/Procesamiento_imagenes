@@ -8,10 +8,13 @@ public class PanelHistograma extends JPanel {
     private int[] data; // Arreglo de datos para el histograma
     private int total;
     private double[] datos = new double[256];
-    private Color c; 
+    private double[] datosAcumulados = new double[256];
+    private Color c;
+    private boolean isAcumilativo;
     
     public PanelHistograma(int[] data) {
         this.data = data;
+        this.isAcumilativo = false;
     }
 
     public PanelHistograma(int[] data, Color c) {
@@ -48,8 +51,11 @@ public class PanelHistograma extends JPanel {
 
         }
         total=contador;
+        double suma=0;
         for(int i=0; i<data.length;i++){
             datos[i]= (double) data[i]/total;
+            suma +=datos[i];
+            datosAcumulados[i]=suma;
         }
     }
 
@@ -85,7 +91,6 @@ public class PanelHistograma extends JPanel {
         }
     }
 
-
     private void drawHistogram(Graphics g) {
         if (data == null || data.length != 256) {
             System.out.println("Error: El arreglo de datos debe tener una longitud de 256.");
@@ -99,7 +104,14 @@ public class PanelHistograma extends JPanel {
 
         g.setColor(c);
         for (int i = 0; i < 256; i++) {
-            int barHeight =(int) (yOffset - (datos[i] * scaleFactor));
+            
+            int barHeight = 0;
+            if(!isAcumilativo){
+                barHeight=(int) (yOffset - (datos[i] * scaleFactor));
+            }
+            else{
+                barHeight=(int) (yOffset - (datosAcumulados[i] * scaleFactor));
+            }
             if(barHeight != yOffset)
                 {g.drawLine(35 + i,  yOffset , 35+i , barHeight );}
         }
@@ -108,7 +120,14 @@ public class PanelHistograma extends JPanel {
 
     private double getMaxCount() {
         double max = 0;
-        for (double value : datos) {
+        double []newDatos;
+        if(isAcumilativo){
+            newDatos = datosAcumulados;
+        }
+        else{
+            newDatos = datos;
+        }
+        for (double value : newDatos) {
             if (value > max) {
                 max = value;
             }
@@ -116,4 +135,8 @@ public class PanelHistograma extends JPanel {
         return max;
     }
 
+    public void cambiarAcumulativo(boolean isAcumilativo){
+        this.isAcumilativo= isAcumilativo;
+        repaint();
+    }
 }

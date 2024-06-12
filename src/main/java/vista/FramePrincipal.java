@@ -20,9 +20,10 @@ public class FramePrincipal extends JInternalFrame {
 
     //Se inicializan todos los objetos que apareceran en el JFrame
     private JMenuBar menuBar;
-    private JMenu menuArchivo, menuImagen, menuVisualizar, menuGuardar;
+    private JMenu menuArchivo, menuImagen, menuVisualizar, menuGuardar, menuHistograma;
     private JMenuItem itemAbrir, itemReiniciar, itemImagenProcesadaVs, itemCanal1Vs, itemCanal2Vs, itemCanal3Vs, itemOperaciones;
     private JMenuItem itemImagenProcesadaSv, itemCanal1Sv, itemCanal2Sv, itemCanal3Sv;
+    private JMenuItem itemHistograma, itemHistogramaAcumulativo;
     private LectorDeImagen lector;
     private JComboBox<String> opcionesPrincipales, opcionesSecundarias;
     private JButton botonActualizar;
@@ -46,7 +47,6 @@ public class FramePrincipal extends JInternalFrame {
         modificable su tamaño
          */
         super("Visor de imagen ", true, true, true, true);
-
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.lector = new LectorDeImagen(path);
         initComponents();
@@ -135,10 +135,32 @@ public class FramePrincipal extends JInternalFrame {
             }
         });
 
+
+        menuHistograma = new JMenu("Histogramas");
+
+        itemHistogramaAcumulativo = new JMenuItem("Histograma Acumulativo");
+        itemHistogramaAcumulativo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e){
+                convertirHistograma(true);
+            }
+        });
+
+        itemHistograma = new JMenuItem("Histograma");
+        itemHistograma.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                convertirHistograma(false);
+            }
+        });
+
+        menuHistograma.add(itemHistogramaAcumulativo);
+        menuHistograma.add(itemHistograma);
+
         menuImagen.add(itemOperaciones);
         menuImagen.add(itemReiniciar);
         menuImagen.add(menuVisualizar);
         menuBar.add(menuImagen);
+        menuBar.add(menuHistograma);
     }
 
     private void initSelectores() {
@@ -627,4 +649,9 @@ public class FramePrincipal extends JInternalFrame {
         frame.toFront();
     }
 
+    private void convertirHistograma(boolean isAcumilativo){
+        histograma1.cambiarAcumulativo(isAcumilativo);
+        histograma2.cambiarAcumulativo(isAcumilativo);
+        histograma3.cambiarAcumulativo(isAcumilativo);
+    }
 }
