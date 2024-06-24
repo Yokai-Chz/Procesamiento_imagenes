@@ -20,10 +20,11 @@ public class FramePrincipal extends JInternalFrame {
 
     //Se inicializan todos los objetos que apareceran en el JFrame
     private JMenuBar menuBar;
-    private JMenu menuArchivo, menuImagen, menuVisualizar, menuGuardar, menuHistograma;
+    private JMenu menuArchivo, menuImagen, menuVisualizar, menuGuardar, menuHistograma, menuEcualizar;
     private JMenuItem itemAbrir, itemReiniciar, itemImagenProcesadaVs, itemCanal1Vs, itemCanal2Vs, itemCanal3Vs, itemOperaciones;
     private JMenuItem itemImagenProcesadaSv, itemCanal1Sv, itemCanal2Sv, itemCanal3Sv;
     private JMenuItem itemHistograma, itemHistogramaAcumulativo;
+    private JMenuItem itemEcualizar;
     private LectorDeImagen lector;
     private JComboBox<String> opcionesPrincipales, opcionesSecundarias;
     private JButton botonActualizar;
@@ -156,11 +157,24 @@ public class FramePrincipal extends JInternalFrame {
         menuHistograma.add(itemHistogramaAcumulativo);
         menuHistograma.add(itemHistograma);
 
+        itemEcualizar = new JMenuItem("Ecualizar imagen");
+        itemEcualizar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e){
+                ecualizarImagen();
+            }
+        });
+
+        menuEcualizar = new JMenu("Ecualizar");
+        menuEcualizar.add(itemEcualizar);
+
         menuImagen.add(itemOperaciones);
         menuImagen.add(itemReiniciar);
         menuImagen.add(menuVisualizar);
+        
         menuBar.add(menuImagen);
         menuBar.add(menuHistograma);
+        menuBar.add(menuEcualizar);
     }
 
     private void initSelectores() {
@@ -661,5 +675,17 @@ public class FramePrincipal extends JInternalFrame {
         img2.cambiarAcumulativo(datos[1], isAcumilativo);
         img3.cambiarAcumulativo(datos[2], isAcumilativo);
 
+    }
+
+    private void ecualizarImagen(){
+        estrategia = new RGBGris();
+        BufferedImage temp = estrategia.convertir(lector.getBufferedImagen())[3];
+        int[] data = estrategia.extraerData()[3];
+
+        FrameEcualizar frameEcualizar = new FrameEcualizar(temp, data);
+        frameEcualizar.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        
+        this.getParent().add(frameEcualizar);
+        frameEcualizar.toFront();
     }
 }
