@@ -10,6 +10,9 @@ import javax.swing.JPanel;
  */
 public class PanelImagen extends JPanel {
     private Image imagen;
+    private BufferedImage bufferedImage;
+    private BufferedImage imagenAcumulada;
+    private boolean isAcumilativo;
     
     /**
      * Constructor que inicializa el panel con una imagen.
@@ -19,6 +22,8 @@ public class PanelImagen extends JPanel {
     public PanelImagen(Image imagen) {
         super();
         this.imagen = imagen;
+        this.isAcumilativo =false;
+        BufferImage();
         this.setSize(imagen.getWidth(null), imagen.getHeight(null));
     }
     
@@ -29,16 +34,17 @@ public class PanelImagen extends JPanel {
      */
     public void addImagen(Image imagen) {
         this.imagen = imagen;
+        BufferImage();
         repaint(); // Repintar el panel para mostrar la nueva imagen
-    }
+    }  
     
     public Image getImage(){
         return this.imagen;
     }
     
-    public BufferedImage getBufferImage() {
+    public void BufferImage() {
         if (imagen instanceof BufferedImage) {
-            return (BufferedImage) imagen;
+            this.bufferedImage = (BufferedImage) imagen;
         }
         
         // Create a new buffered image with the same dimensions and type as the original image
@@ -49,9 +55,13 @@ public class PanelImagen extends JPanel {
         g.drawImage(imagen, 0, 0, null);
         g.dispose();
         
-        return bufferedImage;
+        this.bufferedImage = bufferedImage;
     }
     
+    public BufferedImage getBufferImage(){
+        return this.bufferedImage;
+    }
+
     /**
      * Método para dibujar la imagen en el panel.
      * 
@@ -61,9 +71,43 @@ public class PanelImagen extends JPanel {
     public void paintComponent(Graphics g) {
     	super.paintComponent(g); // Llamar al método de la clase base para pintar el fondo
     	
+        Image imagenTemp = isAcumilativo ? imagenAcumulada : imagen ;
+
     	// Dibujar la imagen en su tamaño normal
-    	if (imagen != null) {
-            g.drawImage(imagen, 0, 0, this.getWidth(), this.getHeight(), this);
+    	if (imagenTemp != null) {
+            g.drawImage(imagenTemp, 0, 0, this.getWidth(), this.getHeight(), this);
         }
+    
+    }
+
+    public void cambiarAcumulativo(double[] datos, boolean isAcumilativo){
+        BufferImage();
+        int ancho = bufferedImage.getWidth();
+        int alto = bufferedImage.getHeight();
+        int pixel=0;
+
+        BufferedImage imgTemp = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_RGB);
+
+        for (int xImg=0; xImg<ancho;xImg++){
+            for(int yImg=0; yImg<alto; yImg++){
+                pixel = bufferedImage.getRGB(xImg, yImg);
+                int rojo = (pixel & 0x00ff0000) >> 16;
+                int verde = (pixel & 0x0000ff00) >> 8;
+                int azul = pixel & 0x000000ff;
+                //System.out.println("Rojo " + rojo + " datos[rojo] " + datos[rojo]);    
+                rojo *= datos[rojo];
+                azul *= datos[azul];
+                verde *= datos[verde];
+                
+                //System.out.println(rojo);
+                pixel = (255 << 24) | ((int) (rojo) << 16) | ((int) (verde) << 8) | (int) (azul);
+
+                imgTemp.setRGB(xImg, yImg, pixel);
+            }
+        }
+        this.imagenAcumulada = imgTemp;
+        this.isAcumilativo=isAcumilativo;
+
+        repaint();
     }
 }

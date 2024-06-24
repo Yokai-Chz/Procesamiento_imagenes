@@ -507,6 +507,7 @@ public class FramePrincipal extends JInternalFrame {
     private void actualizarImg() {
         int opcion = opcionesPrincipales.getSelectedIndex();
         int opcion2 = opcionesSecundarias.getSelectedIndex();
+        convertirHistograma(false);
         switch (opcion) {
             case 1 -> 
                 extraerRGB(opcion2);
@@ -650,8 +651,15 @@ public class FramePrincipal extends JInternalFrame {
     }
 
     private void convertirHistograma(boolean isAcumilativo){
-        histograma1.cambiarAcumulativo(isAcumilativo);
-        histograma2.cambiarAcumulativo(isAcumilativo);
-        histograma3.cambiarAcumulativo(isAcumilativo);
+        
+        double[][] datos = new double[3][256];
+        datos[0]= histograma1.cambiarAcumulativo(isAcumilativo);
+        datos[1]= histograma2.cambiarAcumulativo(isAcumilativo);
+        datos[2]= histograma3.cambiarAcumulativo(isAcumilativo);
+
+        img1.cambiarAcumulativo(datos[0], isAcumilativo);
+        img2.cambiarAcumulativo(datos[1], isAcumilativo);
+        img3.cambiarAcumulativo(datos[2], isAcumilativo);
+
     }
 }
