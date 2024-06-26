@@ -20,6 +20,7 @@ public class PanelHistograma extends JPanel {
     public PanelHistograma(int[] data, Color c) {
         this.data = data;
         this.c = c;
+        this.isAcumilativo = false;
     }
 
     public void setData(int[] newData, Color color) {
@@ -30,7 +31,8 @@ public class PanelHistograma extends JPanel {
 
     public void setData(int[] newData) {
         this.data = newData;
-        repaint(); // Vuelve a dibujar el panel con los nuevos datos
+        prepararDatos();
+        repaint(); 
     }
 
     @Override
@@ -57,6 +59,10 @@ public class PanelHistograma extends JPanel {
             suma += datos[i];
             datosAcumulados[i] = suma;
         }
+    }
+
+    public double[] getAcumulado(){
+        return datosAcumulados;
     }
 
     private void drawAxes(Graphics g) {
