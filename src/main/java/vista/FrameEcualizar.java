@@ -25,9 +25,9 @@ public class FrameEcualizar extends JInternalFrame {
     private int[] dataOrg;
 
     private JComboBox<String> opcionesPrincipales;
-    private JSlider slider1, slider2;//, slider3;
-    private JTextField valSlider1, valSlider2;
-    private JLabel labelF1, labelF2;
+    private JSlider slider1, slider2;
+    private JTextField valSlider1, valSlider2, inputAlpha, inputPot;
+    private JLabel labelF1, labelF2, labelAlpha, labelPot;
     private JButton btnActualizar;
 
     private PanelImagen panelImagen;
@@ -39,7 +39,7 @@ public class FrameEcualizar extends JInternalFrame {
         super("Ecualizacion", true, true, true, true);
         this.imagenOrg = image;
         this.dataOrg = data;
-        this.setSize(640, 330);
+        this.setSize(640, 370);
         setLocation(50, 50); // Establece la ubicación inicial del internal frame
         setVisible(true);
         initComponents();
@@ -71,7 +71,7 @@ public class FrameEcualizar extends JInternalFrame {
     }
 
     private void initSliders() {
-        slider1 = new JSlider(JSlider.HORIZONTAL, 0, 255, 127);
+        slider1 = new JSlider(JSlider.HORIZONTAL, 0, 255, 0);
         slider1.setPaintTicks(true);
         slider1.setPaintLabels(true);
         slider1.addChangeListener(new ChangeListener() {
@@ -83,7 +83,7 @@ public class FrameEcualizar extends JInternalFrame {
         });
         slider1.setBounds(350, 230, 200, 40);
 
-        slider2 = new JSlider(JSlider.HORIZONTAL, 0, 255, 127);
+        slider2 = new JSlider(JSlider.HORIZONTAL, 0, 255, 255);
         slider2.setPaintTicks(true);
         slider2.setPaintLabels(true);
         slider2.addChangeListener(new ChangeListener() {
@@ -95,7 +95,7 @@ public class FrameEcualizar extends JInternalFrame {
         });
         slider2.setBounds(350, 270, 200, 40);
 
-        valSlider1 = new JTextField("127");
+        valSlider1 = new JTextField("0");
         valSlider1.setBounds(550, 230, 30, 25);
         valSlider1.addActionListener(new ActionListener() {
             @Override
@@ -116,7 +116,7 @@ public class FrameEcualizar extends JInternalFrame {
             }
         });
 
-        valSlider2 = new JTextField("127");
+        valSlider2 = new JTextField("255");
         valSlider2.setBounds(550, 270, 30, 25);
         valSlider2.addActionListener(new ActionListener() {
             @Override
@@ -137,6 +137,14 @@ public class FrameEcualizar extends JInternalFrame {
             }
         });
 
+        inputAlpha = new JTextField("127");
+        inputAlpha.setBounds(350, 310, 30, 25);
+        inputAlpha.setText("0.01");
+
+        inputPot = new JTextField("127");
+        inputPot.setBounds(450, 310, 30, 25);
+        inputPot.setText("0.5");
+
     }
 
     private void initLabels() {
@@ -147,14 +155,22 @@ public class FrameEcualizar extends JInternalFrame {
         labelF2 = new JLabel("F2:");
         labelF2.setBounds(330, 270, 50, 30);
         labelF2.setFont(new Font("Tahoma", Font.BOLD, 14));
+
+        labelAlpha = new JLabel("Alpha:");
+        labelAlpha.setBounds(300, 310, 50, 30);
+        labelAlpha.setFont(new Font("Tahoma", Font.BOLD, 14));
+
+        labelPot = new JLabel("Pot:");
+        labelPot.setBounds(400, 310, 50, 30);
+        labelPot.setFont(new Font("Tahoma", Font.BOLD, 14));
     }
 
-    private void initBoton(){
+    private void initBoton() {
         btnActualizar = new JButton("Actualizar");
         btnActualizar.setBounds(20, 290, 100, 30);
         btnActualizar.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e){
+            public void actionPerformed(ActionEvent e) {
                 actualizarImg(opcionesPrincipales.getSelectedIndex());
             }
         });
@@ -176,35 +192,70 @@ public class FrameEcualizar extends JInternalFrame {
         contenedor.add(slider2);
         contenedor.add(valSlider1);
         contenedor.add(valSlider2);
+        contenedor.add(inputAlpha);
+        contenedor.add(inputPot);
         contenedor.add(labelF1);
         contenedor.add(labelF2);
+        contenedor.add(labelAlpha);
+        contenedor.add(labelPot);
+        contenedor.add(inputPot);
         contenedor.add(btnActualizar);
     }
 
     private void actualizarImg(int opcion) {
-        switch (opcion) {
-            case 1 -> estrategia = new Uniforme();
+        try {
 
-            case 2 -> estrategia = new Exponencial();
+            int f1 = slider1.getValue();
+            int f2 = slider2.getValue();
+            double a = Double.parseDouble(inputAlpha.getText());
+            double pot = Double.parseDouble(inputPot.getText());
 
-            case 3 -> estrategia = new Rayleigh();
+            switch (opcion) {
+                case 1 -> estrategia = new Uniforme();
 
-            case 4 -> estrategia = new Raices();
+                case 2 -> {
+                    estrategia = new Exponencial();
+                    if (a > .1 || a < .01) {
+                        throw new IllegalArgumentException("El valor de Alpha debe ser entre 0.01 y 0.1");
+                    }
 
-            case 5 -> estrategia = new Logaritmica();
+                }
 
-            default -> System.out.println("Original");
+                case 3 -> {
+                    estrategia = new Rayleigh();
+                    if (a > 100 || a < 30) {
+                        throw new IllegalArgumentException("El valor de Alpha debe ser entre 30 y 100");
+                    }
+                }
+
+                case 4 -> {
+                    estrategia = new Raices();
+                    if (pot > 2 || pot < .5) {
+                        throw new IllegalArgumentException("El valor de Pot debe ser entre 0.5 y 2");
+                    }
+                }
+
+                case 5 -> estrategia = new Logaritmica();
+
+                default -> System.out.println("Original");
+            }
+
+            if (opcion != 0) {
+                panelHistograma.setData(dataOrg);
+                estrategia.setDatos(f1, f2, a, pot);
+                BufferedImage impTemp = estrategia.Ecualizar(imagenOrg, panelHistograma.getAcumulado());
+                int[] data = estrategia.getData();
+                panelImagen.addImagen(impTemp);
+                panelHistograma.setData(data);
+            } else {
+                panelImagen.addImagen(imagenOrg);
+                panelHistograma.setData(dataOrg);
+            }
+
+        } catch (Exception e) {
+            // TODO: handle exception
+            JOptionPane.showMessageDialog(null, "Error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
 
-        int f1 = slider1.getValue();
-        int f2 = slider2.getValue();
-        estrategia.setDatos(f1, f2, 0, 0);
-        panelHistograma.setData(dataOrg);
-        if (opcion == 1) {
-            BufferedImage impTemp = estrategia.Ecualizar(imagenOrg, panelHistograma.getAcumulado());
-            int[] data = estrategia.getData();
-            panelImagen.addImagen(impTemp);
-            panelHistograma.setData(data);
-        }
     }
 }

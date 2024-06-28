@@ -43,7 +43,7 @@ public class Uniforme implements EcualizarImagen {
     }
 
     @Override
-    public void setDatos(int f1, int f2, int a, int pot) {
+    public void setDatos(int f1, int f2, double a, double pot) {
         this.fmax = Math.max(f1, f2);
         this.fmin = Math.min(f1, f2);
     }
